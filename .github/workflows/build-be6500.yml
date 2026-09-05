@@ -7,7 +7,7 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
-      - name: 清理磁盘空间
+      - name: 清理磁盘
         run: |
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf /opt/ghc
@@ -17,34 +17,37 @@ jobs:
       - name: 拉取源码
         uses: actions/checkout@v4
 
-      - name: 安装编译依赖
+      - name: 安装依赖
         run: |
           sudo apt update
           sudo apt install -y build-essential flex bison git libncurses-dev gawk unzip libssl-dev python3-distutils rsync ccache
 
-      - name: 更新feeds
+      - name: feeds更新
         run: |
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
-      - name: 生成.config配置
+      - name: 写入配置并defconfig
         run: |
-          touch .config
-          echo 'CONFIG_TARGET_ipq53xx=y' >> .config
-          echo 'CONFIG_TARGET_ipq53xx_generic=y' >> .config
-          echo 'CONFIG_TARGET_ipq53xx_generic_DEVICE_jdcloud_be6500=y' >> .config
-          echo 'CONFIG_DEVEL=y' >> .config
-          echo 'CONFIG_CCACHE=y' >> .config
+          cat > .config <<'EOF'
+CONFIG_TARGET_ipq53xx=y
+CONFIG_TARGET_ipq53xx_generic=y
+CONFIG_TARGET_ipq53xx_generic_DEVICE_jdcloud_be6500=y
+CONFIG_DEVEL=y
+CONFIG_CCACHE=y
+EOF
+          make defconfig
 
-      - name: 下载源码包
+      - name: make download
         run: make -j1 download
 
       - name: 编译固件
         run: |
           make -j$(nproc) V=s || make -j1 V=s
 
-      - name: 上传固件
+      - name: 上传产物
         uses: actions/upload-artifact@v4
         with:
           name: BE6500‑firmware
           path: bin/targets/ipq53xx/generic/*.bin
+
