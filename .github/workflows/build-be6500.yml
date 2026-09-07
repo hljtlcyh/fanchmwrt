@@ -15,6 +15,8 @@ jobs:
           sudo rm -rf "$AGENT_TOOLSDIRECTORY"
       - name: 拉取源码
         uses: actions/checkout@v4
+        with:
+          ref: master
 
       - name: 安装编译依赖
         run: |
