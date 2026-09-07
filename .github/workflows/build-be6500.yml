@@ -16,7 +16,7 @@ jobs:
       - name: 拉取源码
         uses: actions/checkout@v4
         with:
-          ref: master
+          ref: main
 
       - name: 安装编译依赖
         run: |
